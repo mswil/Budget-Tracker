@@ -11,7 +11,7 @@ request.onsuccess = function (event) {
 
     if (navigator.onLine) {
 
-        // uploadInvoice();
+        uploadInvoice();
     }
 };
 
@@ -25,3 +25,39 @@ function saveRecord(record) {
     const invoiceObjectStore = transaction.objectStore('new_invoice');
     invoiceObjectStore.add(record);
 }
+
+function uploadInvoice() {
+    const transaction = db.transaction(['new_invoice'], 'readwrite');
+    const invoiceObjectStore = transaction.objectStore('new_invoice');
+    const getAll = invoiceObjectStore.getAll();
+
+    getAll.onsuccess = function () {
+        if (getAll.result.length > 0) {
+            fetch('/api/transaction', {
+                method: 'POST',
+                body: JSON.stringify(getAll.result),
+                headers: {
+                    Accept: 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(serverResponse => {
+                    if (serverResponse.message) {
+                        throw new Error(serverResponse);
+                    }
+                    const transaction = db.transaction(['new_invoice'], 'readwrite');
+                    const invoiceObjectStore = transaction.objectStore('new_invoice');
+                    invoiceObjectStore.clear();
+
+                    console.log('All saved invoices have been submitted!');
+                })
+                .catch(err => {
+                    console.error(err);
+                });
+        }
+    };
+};
+
+window.addEventListener('online', uploadInvoice);
+
