@@ -24,6 +24,7 @@ function saveRecord(record) {
     const transaction = db.transaction(['new_invoice'], 'readwrite');
     const invoiceObjectStore = transaction.objectStore('new_invoice');
     invoiceObjectStore.add(record);
+    alert('Transaction has been added to your local device. Please establish internet connection to upload changes')
 }
 
 function uploadInvoice() {
@@ -50,7 +51,7 @@ function uploadInvoice() {
                     const invoiceObjectStore = transaction.objectStore('new_invoice');
                     invoiceObjectStore.clear();
 
-                    console.log('All saved invoices have been submitted!');
+                    alert('All locally stored transactions have been uploaded!');
                 })
                 .catch(err => {
                     console.error(err);
